@@ -168,10 +168,11 @@ td.dur.long { color: #c0392b; }
               <th onclick="sortBy('duration')" id="th-duration">Süre (dk)</th>
               <th>Ziyaret Sebebi</th>
               <th>Not</th>
+              <th>Fotoğraf</th>
               <th>Durum</th>
             </tr>
           </thead>
-          <tbody id="tbody"><tr class="empty-row"><td colspan="9">Yükleniyor...</td></tr></tbody>
+          <tbody id="tbody"><tr class="empty-row"><td colspan="10">Yükleniyor...</td></tr></tbody>
         </table>
       </div>
 
@@ -295,7 +296,7 @@ async function loadData() {
     document.getElementById('last-updated').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
     applyFilters();
   } catch(e) {
-    document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="9">Bağlantı hatası</td></tr>';
+    document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="10">Bağlantı hatası</td></tr>';
   }
   document.getElementById('loading').classList.add('hidden');
 }
@@ -341,7 +342,7 @@ function applyFilters() {
 
 function renderTable(rows) {
   const tbody = document.getElementById('tbody');
-  if (!rows.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="9">Kayıt bulunamadı</td></tr>'; return; }
+  if (!rows.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="10">Kayıt bulunamadı</td></tr>'; return; }
   tbody.innerHTML = rows.map(v => {
     const isActive = !v.check_out_time;
     const date     = v.check_in_time ? new Date(v.check_in_time).toLocaleDateString('tr-TR') : '—';
@@ -360,6 +361,7 @@ function renderTable(rows) {
       <td class="${durClass}">${dur}</td>
       <td>${reasons||'<span style="color:#d8dde3">—</span>'}</td>
       <td class="td-note" title="${v.notes||''}">${v.notes||'<span style="color:#d8dde3">—</span>'}</td>
+      <td>${v.photo_url ? '<a href="'+v.photo_url+'" target="_blank" style="color:#2176ae;font-size:12px;">📷 Görüntüle</a>' : '<span style="color:#d8dde3">—</span>'}</td>
       <td>${badge}</td>
     </tr>`;
   }).join('');
