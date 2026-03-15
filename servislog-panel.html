@@ -167,12 +167,14 @@ td.dur.long { color: #c0392b; }
               <th onclick="sortBy('checkout')" id="th-checkout">Çıkış</th>
               <th onclick="sortBy('duration')" id="th-duration">Süre (dk)</th>
               <th>Ziyaret Sebebi</th>
-              <th>Not</th>
+              <th>Görüşülen</th>
+              <th>Konular</th>
+              <th>Aksiyonlar</th>
               <th>Fotoğraf</th>
               <th>Durum</th>
             </tr>
           </thead>
-          <tbody id="tbody"><tr class="empty-row"><td colspan="10">Yükleniyor...</td></tr></tbody>
+          <tbody id="tbody"><tr class="empty-row"><td colspan="12">Yükleniyor...</td></tr></tbody>
         </table>
       </div>
 
@@ -296,7 +298,7 @@ async function loadData() {
     document.getElementById('last-updated').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
     applyFilters();
   } catch(e) {
-    document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="10">Bağlantı hatası</td></tr>';
+    document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="12">Bağlantı hatası</td></tr>';
   }
   document.getElementById('loading').classList.add('hidden');
 }
@@ -342,7 +344,7 @@ function applyFilters() {
 
 function renderTable(rows) {
   const tbody = document.getElementById('tbody');
-  if (!rows.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="10">Kayıt bulunamadı</td></tr>'; return; }
+  if (!rows.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="12">Kayıt bulunamadı</td></tr>'; return; }
   tbody.innerHTML = rows.map(v => {
     const isActive = !v.check_out_time;
     const date     = v.check_in_time ? new Date(v.check_in_time).toLocaleDateString('tr-TR') : '—';
@@ -352,6 +354,12 @@ function renderTable(rows) {
     const durClass = v.duration_minutes>120 ? 'dur long' : 'dur';
     const reasons  = (v.reason_ids||[]).map(id=>reasonMap[id]?`<span class="reason-tag">${reasonMap[id]}</span>`:'').join('');
     const badge    = isActive ? '<span class="badge-active">Aktif</span>' : '<span class="badge-done">Tamamlandı</span>';
+    const photos   = v.photos||[];
+    let photoCell = '<span style="color:#d8dde3">—</span>';
+    if (photos.length) {
+      photoCell = photos.map((p,i)=>`<a href="${p.url}" target="_blank" style="color:#2176ae;font-size:12px;display:block;">📷 ${i+1}${p.note?` — ${p.note.slice(0,20)}`:''}</a>`).join('');
+    }
+    const nd = s => s ? `<span class="td-note" title="${s}">${s}</span>` : '<span style="color:#d8dde3">—</span>';
     return `<tr class="${isActive?'active-row':''}">
       <td class="mono">${date}</td>
       <td class="name">${personnelMap[v.personnel_id]||'?'}</td>
@@ -360,8 +368,10 @@ function renderTable(rows) {
       <td class="mono">${co}</td>
       <td class="${durClass}">${dur}</td>
       <td>${reasons||'<span style="color:#d8dde3">—</span>'}</td>
-      <td class="td-note" title="${v.notes||''}">${v.notes||'<span style="color:#d8dde3">—</span>'}</td>
-      <td>${v.photo_url ? '<a href="'+v.photo_url+'" target="_blank" style="color:#2176ae;font-size:12px;">📷 Görüntüle</a>' : '<span style="color:#d8dde3">—</span>'}</td>
+      <td>${nd(v.attendees)}</td>
+      <td>${nd(v.topics)}</td>
+      <td>${nd(v.actions)}</td>
+      <td>${photoCell}</td>
       <td>${badge}</td>
     </tr>`;
   }).join('');
@@ -397,7 +407,7 @@ function resetFilters() {
 }
 
 function exportCSV() {
-  const cols = ['Tarih','Personel','Müşteri','Giriş','Çıkış','Süre (dk)','Ziyaret Sebepleri','Not','Durum'];
+  const cols = ['Tarih','Personel','Müşteri','Giriş','Çıkış','Süre (dk)','Ziyaret Sebepleri','Görüşülen','Konular','Aksiyonlar','Fotoğraf Sayısı','Durum'];
   const rows = allVisits.map(v=>[
     v.check_in_time?new Date(v.check_in_time).toLocaleDateString('tr-TR'):'',
     personnelMap[v.personnel_id]||'',
@@ -406,7 +416,10 @@ function exportCSV() {
     v.check_out_time?new Date(v.check_out_time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'',
     v.duration_minutes??'',
     (v.reason_ids||[]).map(id=>reasonMap[id]||'').filter(Boolean).join(', '),
-    v.notes||'',
+    v.attendees||'',
+    v.topics||'',
+    v.actions||'',
+    (v.photos||[]).length,
     v.check_out_time?'Tamamlandı':'Aktif'
   ]);
   const csv = [cols,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
