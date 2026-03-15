@@ -1,403 +1,418 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0f1923" />
-  <title>ServisLog</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; background: #0f1923; color: #e8edf2; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-    .app { max-width: 430px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
-
-    /* LOGIN */
-    #login-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 32px 24px; gap: 32px; }
-    .brand { text-align: center; }
-    .brand-icon { width: 64px; height: 64px; background: #1a9e75; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
-    .brand-icon svg { width: 32px; height: 32px; fill: #e1f5ee; }
-    .brand h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
-    .brand p { font-size: 14px; color: #5a7080; margin-top: 4px; }
-    .login-form { display: flex; flex-direction: column; gap: 12px; }
-    .login-form label { font-size: 12px; font-weight: 600; color: #5a7080; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block; }
-    .field-select { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 15px; font-family: inherit; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
-    .field-select:focus { outline: none; border-color: #1a9e75; }
-    .btn-primary { background: #1a9e75; border: none; border-radius: 14px; padding: 16px; color: #e1f5ee; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s, transform 0.1s; width: 100%; }
-    .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
-    .btn-primary:disabled { background: #1e2e3d; color: #3a4e5d; cursor: not-allowed; transform: none; }
-
-    /* MAIN */
-    #main-screen { flex: 1; display: flex; flex-direction: column; }
-    .topbar { padding: 16px 20px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a2535; }
-    .topbar-left { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 36px; height: 36px; border-radius: 10px; background: #162130; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #1a9e75; border: 1px solid #1e2e3d; }
-    .topbar-name { font-size: 14px; font-weight: 600; }
-    .topbar-role { font-size: 11px; color: #5a7080; }
-    .btn-logout { background: transparent; border: 1px solid #1e2e3d; border-radius: 8px; padding: 6px 12px; color: #5a7080; font-size: 12px; font-family: inherit; cursor: pointer; }
-
-    .main-content { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-
-    /* STATUS CARD */
-    .status-card { border-radius: 18px; padding: 24px; }
-    .status-card.idle { background: #162130; border: 1px solid #1e2e3d; }
-    .status-card.active { background: #0d2b1f; border: 1px solid #1a4a35; }
-    .status-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #5a7080; margin-bottom: 8px; }
-    .status-card.active .status-label { color: #1a9e75; }
-    .status-customer { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
-    .status-time { font-size: 13px; color: #5a7080; }
-    .status-card.active .status-time { color: #4ac99a; }
-    .timer { font-size: 40px; font-weight: 700; letter-spacing: -1px; color: #1a9e75; margin: 12px 0 4px; font-variant-numeric: tabular-nums; }
-    .timer-label { font-size: 12px; color: #4ac99a; }
-    .active-reasons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-    .reason-badge { background: #0f3d2a; border: 1px solid #1a6a45; color: #4ac99a; border-radius: 100px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
-
-    /* FORM FIELDS */
-    .section-label { font-size: 12px; font-weight: 600; color: #5a7080; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .customer-select { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 15px; font-family: inherit; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
-    .customer-select:focus { outline: none; border-color: #1a9e75; }
-
-    /* REASON CHECKBOXES */
-    .reasons-grid { display: flex; flex-direction: column; gap: 8px; }
-    .reason-item { display: flex; align-items: center; gap: 12px; background: #162130; border: 1px solid #1e2e3d; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .reason-item.selected { background: #0d2b1f; border-color: #1a9e75; }
-    .reason-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #2a3e50; background: transparent; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .reason-item.selected .reason-check { background: #1a9e75; border-color: #1a9e75; }
-    .reason-check svg { display: none; }
-    .reason-item.selected .reason-check svg { display: block; }
-    .reason-text { font-size: 14px; font-weight: 500; }
-
-    /* NOTE */
-    .note-area { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 14px; font-family: inherit; resize: none; min-height: 80px; }
-    .note-area:focus { outline: none; border-color: #1a9e75; }
-    .note-area::placeholder { color: #3a4e5d; }
-
-    /* BUTTONS */
-    .btn-checkin { background: #1a9e75; border: none; border-radius: 14px; padding: 18px; color: #e1f5ee; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.15s, transform 0.1s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-checkin:active { opacity: 0.85; transform: scale(0.98); }
-    .btn-checkin:disabled { background: #1e2e3d; color: #3a4e5d; cursor: not-allowed; transform: none; }
-    .btn-checkout { background: transparent; border: 2px solid #c0392b; border-radius: 14px; padding: 18px; color: #e74c3c; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.15s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-checkout:active { background: #2d0f0f; transform: scale(0.98); }
-
-    /* HISTORY */
-    .history-list { display: flex; flex-direction: column; gap: 10px; }
-    .history-item { background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; }
-    .history-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-    .history-customer { font-size: 14px; font-weight: 600; }
-    .history-duration { font-size: 13px; font-weight: 700; color: #1a9e75; }
-    .history-meta { font-size: 12px; color: #5a7080; }
-    .history-reasons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
-    .history-reason-tag { background: #0f3d2a; border: 1px solid #1a5a3a; color: #4ac99a; border-radius: 100px; padding: 2px 8px; font-size: 11px; }
-    .history-note { font-size: 12px; color: #7a9aaa; margin-top: 6px; padding-top: 6px; border-top: 1px solid #1e2e3d; }
-
-    /* TOAST */
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a9e75; color: #e1f5ee; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 999; white-space: nowrap; }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.error { background: #c0392b; }
-
-    .hidden { display: none !important; }
-    .divider { height: 1px; background: #1a2535; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0f1923" />
+<title>ServisLog</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: #0f1923; color: #e8edf2; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+.app { max-width: 430px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+#login-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 32px 24px; gap: 32px; }
+.brand { text-align: center; }
+.brand-icon { width: 64px; height: 64px; background: #1a9e75; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+.brand-icon svg { width: 32px; height: 32px; fill: #e1f5ee; }
+.brand h1 { font-size: 24px; font-weight: 700; }
+.brand p { font-size: 14px; color: #5a7080; margin-top: 4px; }
+.login-form { display: flex; flex-direction: column; gap: 12px; }
+.login-form label { font-size: 12px; font-weight: 600; color: #5a7080; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+.field-select { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 15px; font-family: inherit; appearance: none; }
+.btn-primary { background: #1a9e75; border: none; border-radius: 14px; padding: 16px; color: #e1f5ee; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
+.btn-primary:disabled { background: #1e2e3d; color: #3a4e5d; cursor: not-allowed; }
+#main-screen { flex: 1; display: flex; flex-direction: column; }
+.topbar { padding: 16px 20px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a2535; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 10px; background: #162130; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #1a9e75; border: 1px solid #1e2e3d; }
+.topbar-name { font-size: 14px; font-weight: 600; }
+.topbar-role { font-size: 11px; color: #5a7080; }
+.btn-logout { background: transparent; border: 1px solid #1e2e3d; border-radius: 8px; padding: 6px 12px; color: #5a7080; font-size: 12px; font-family: inherit; cursor: pointer; }
+.main-content { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+.status-card { border-radius: 18px; padding: 24px; }
+.status-card.idle { background: #162130; border: 1px solid #1e2e3d; }
+.status-card.active { background: #0d2b1f; border: 1px solid #1a4a35; }
+.status-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #5a7080; margin-bottom: 8px; }
+.status-card.active .status-label { color: #1a9e75; }
+.status-customer { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.status-time { font-size: 13px; color: #5a7080; }
+.status-card.active .status-time { color: #4ac99a; }
+.timer { font-size: 40px; font-weight: 700; color: #1a9e75; margin: 12px 0 4px; font-variant-numeric: tabular-nums; }
+.timer-label { font-size: 12px; color: #4ac99a; }
+.active-reasons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.reason-badge { background: #0f3d2a; border: 1px solid #1a6a45; color: #4ac99a; border-radius: 100px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+.section-label { font-size: 12px; font-weight: 600; color: #5a7080; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.customer-select { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 15px; font-family: inherit; appearance: none; }
+.reasons-grid { display: flex; flex-direction: column; gap: 8px; }
+.reason-item { display: flex; align-items: center; gap: 12px; background: #162130; border: 1px solid #1e2e3d; border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+.reason-item.selected { background: #0d2b1f; border-color: #1a9e75; }
+.reason-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #2a3e50; background: transparent; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.reason-item.selected .reason-check { background: #1a9e75; border-color: #1a9e75; }
+.reason-check svg { display: none; }
+.reason-item.selected .reason-check svg { display: block; }
+.reason-text { font-size: 14px; font-weight: 500; }
+.note-area { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 14px; font-family: inherit; resize: none; min-height: 72px; }
+.note-area:focus { outline: none; border-color: #1a9e75; }
+.note-area::placeholder { color: #3a4e5d; }
+.photo-add-btn { display: flex; align-items: center; gap: 10px; background: #162130; border: 1px dashed #2a3e50; border-radius: 14px; padding: 14px 16px; cursor: pointer; width: 100%; }
+.photo-add-btn span { font-size: 14px; color: #5a7080; }
+.photo-card { background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; overflow: hidden; }
+.photo-card-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+.photo-card-note { font-size: 12px; color: #7a9aaa; font-style: italic; }
+.photo-remove { background: transparent; border: none; color: #e74c3c; font-size: 12px; cursor: pointer; font-family: inherit; padding: 0; }
+.btn-row { display: flex; gap: 10px; }
+.btn-half { flex: 1; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.btn-yes { background: #1a9e75; color: #e1f5ee; border: none; }
+.btn-no { background: transparent; border: 1px solid #2a3e50; color: #5a7080; }
+.btn-checkin { background: #1a9e75; border: none; border-radius: 14px; padding: 18px; color: #e1f5ee; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-checkin:disabled { background: #1e2e3d; color: #3a4e5d; cursor: not-allowed; }
+.btn-checkout { background: transparent; border: 2px solid #c0392b; border-radius: 14px; padding: 18px; color: #e74c3c; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; }
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+.history-item { background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; }
+.history-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.history-customer { font-size: 14px; font-weight: 600; }
+.history-duration { font-size: 13px; font-weight: 700; color: #1a9e75; }
+.history-meta { font-size: 12px; color: #5a7080; }
+.history-reasons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.history-reason-tag { background: #0f3d2a; border: 1px solid #1a5a3a; color: #4ac99a; border-radius: 100px; padding: 2px 8px; font-size: 11px; }
+.history-note { font-size: 12px; color: #7a9aaa; margin-top: 6px; padding-top: 6px; border-top: 1px solid #1e2e3d; }
+.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a9e75; color: #e1f5ee; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; transition: transform 0.3s; z-index: 999; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.error { background: #c0392b; }
+.hidden { display: none !important; }
+.divider { height: 1px; background: #1a2535; }
+</style>
 </head>
 <body>
 <div class="app">
-
-  <!-- LOGIN -->
   <div id="login-screen">
     <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-      </div>
-      <h1>ServisLog</h1>
-      <p>Saha Servis Takip</p>
+      <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+      <h1>ServisLog</h1><p>Saha Servis Takip</p>
     </div>
     <div class="login-form">
-      <div>
-        <label>Personel Seçin</label>
-        <select class="field-select" id="personnel-select"><option value="">Yükleniyor...</option></select>
-      </div>
+      <div><label>Personel Seçin</label><select class="field-select" id="personnel-select"><option value="">Yükleniyor...</option></select></div>
       <button class="btn-primary" id="login-btn" disabled onclick="doLogin()">Giriş Yap</button>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div id="main-screen" class="hidden">
     <div class="topbar">
       <div class="topbar-left">
-        <div class="avatar" id="user-avatar">AY</div>
-        <div>
-          <div class="topbar-name" id="user-name">Ahmet Yılmaz</div>
-          <div class="topbar-role">Saha Personeli</div>
-        </div>
+        <div class="avatar" id="user-avatar">—</div>
+        <div><div class="topbar-name" id="user-name">—</div><div class="topbar-role">Saha Personeli</div></div>
       </div>
       <button class="btn-logout" onclick="doLogout()">Çıkış</button>
     </div>
-
     <div class="main-content">
-      <!-- STATUS CARD -->
+
       <div id="status-card" class="status-card idle">
         <div class="status-label" id="status-label">Bekleniyor</div>
         <div class="status-customer" id="status-customer">Müşteri seçilmedi</div>
-        <div class="status-time" id="status-time">Giriş yapmak için aşağıdan müşteri seçin</div>
-        <div id="timer-display" class="hidden">
-          <div class="timer" id="timer">00:00</div>
-          <div class="timer-label">süre geçiyor</div>
-        </div>
+        <div class="status-time" id="status-time">Giriş yapmak için aşağıdan seçim yapın</div>
+        <div id="timer-display" class="hidden"><div class="timer" id="timer">00:00</div><div class="timer-label">süre geçiyor</div></div>
         <div class="active-reasons hidden" id="active-reasons"></div>
       </div>
 
-      <!-- IDLE STATE -->
       <div id="idle-state">
         <div class="section-label">Müşteri Seç</div>
-        <select class="customer-select" id="customer-select" onchange="onCustomerChange()">
-          <option value="">Müşteri seçin...</option>
-        </select>
+        <select class="customer-select" id="customer-select" onchange="onCustomerChange()"><option value="">Müşteri seçin...</option></select>
       </div>
 
-      <!-- REASONS -->
       <div id="reasons-section" class="hidden">
         <div class="section-label">Ziyaret Sebebi <span style="color:#3a4e5d;font-size:11px;">(birden fazla seçilebilir)</span></div>
         <div class="reasons-grid" id="reasons-grid"></div>
       </div>
 
-      <!-- ACTIVE NOTE + PHOTO -->
       <div id="active-state" class="hidden">
-        <div class="section-label">Not Ekle (isteğe bağlı)</div>
-        <textarea class="note-area" id="visit-note" placeholder="Yapılan işlemi kısaca yazın..."></textarea>
-        <div style="margin-top:12px;">
-          <div class="section-label">Fotoğraf Ekle (isteğe bağlı)</div>
-          <label style="display:flex;align-items:center;gap:10px;background:#162130;border:1px dashed #2a3e50;border-radius:14px;padding:14px 16px;cursor:pointer;margin-top:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="#5a7080"><path d="M12 15.2A3.2 3.2 0 0 1 8.8 12 3.2 3.2 0 0 1 12 8.8 3.2 3.2 0 0 1 15.2 12 3.2 3.2 0 0 1 12 15.2M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5m-7-2h2.17L8.5 3h7l1.33 2H19a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>
-            <span id="photo-label-text" style="font-size:14px;color:#5a7080;">Fotoğraf seç veya çek</span>
-            <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;" onchange="onPhotoSelected()" />
-          </label>
-          <div id="photo-preview" style="display:none;margin-top:10px;position:relative;">
-            <img id="photo-img" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover;" />
-            <button onclick="removePhoto()" style="position:absolute;top:8px;right:8px;background:#c0392b;border:none;border-radius:50%;width:28px;height:28px;color:#fff;font-size:16px;cursor:pointer;">×</button>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><div class="section-label">Görüşülen Kişi(ler)</div><textarea class="note-area" id="note-attendees" placeholder="Görüşülen kişileri yazın..."></textarea></div>
+          <div><div class="section-label">Konular</div><textarea class="note-area" id="note-topics" placeholder="Görüşülen konuları yazın..."></textarea></div>
+          <div><div class="section-label">Aksiyonlar</div><textarea class="note-area" id="note-actions" placeholder="Alınan aksiyonları yazın..."></textarea></div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="section-label">Fotoğraflar</div>
+          <div id="photo-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+
+          <div id="photo-step-add">
+            <label class="photo-add-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#5a7080"><path d="M12 15.2A3.2 3.2 0 0 1 8.8 12 3.2 3.2 0 0 1 12 8.8 3.2 3.2 0 0 1 15.2 12 3.2 3.2 0 0 1 12 15.2M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5m-7-2h2.17L8.5 3h7l1.33 2H19a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>
+              <span>Fotoğraf ekle (isteğe bağlı)</span>
+              <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;" onchange="onPhotoSelected()" />
+            </label>
+          </div>
+
+          <div id="photo-step-preview" class="hidden" style="margin-top:8px;">
+            <img id="photo-preview-img" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover;display:block;" />
+            <div style="margin-top:12px;">
+              <div style="font-size:13px;color:#5a7080;margin-bottom:8px;">Bu fotoğrafa not eklemek ister misiniz?</div>
+              <div class="btn-row"><button class="btn-half btn-yes" onclick="showPhotoNote()">Evet</button><button class="btn-half btn-no" onclick="skipPhotoNote()">Hayır</button></div>
+            </div>
+          </div>
+
+          <div id="photo-step-note" class="hidden" style="margin-top:8px;">
+            <textarea class="note-area" id="photo-note-input" placeholder="Bu fotoğraf için not yazın..." style="min-height:60px;"></textarea>
+            <button class="btn-primary" style="margin-top:8px;padding:12px;font-size:14px;" onclick="savePhotoWithNote()">Kaydet</button>
+          </div>
+
+          <div id="photo-step-more" class="hidden" style="margin-top:10px;">
+            <div style="font-size:13px;color:#5a7080;margin-bottom:8px;">Başka fotoğraf eklemek ister misiniz?</div>
+            <div class="btn-row"><button class="btn-half btn-yes" onclick="addAnotherPhoto()">Evet</button><button class="btn-half btn-no" onclick="doneWithPhotos()">Hayır</button></div>
           </div>
         </div>
       </div>
 
       <div class="divider"></div>
-
-      <!-- BUTTONS -->
       <button class="btn-checkin" id="checkin-btn" disabled onclick="doCheckIn()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-        Giriş Yap
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>Giriş Yap
       </button>
       <button class="btn-checkout hidden" id="checkout-btn" onclick="doCheckOut()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-        Çıkış Yap
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>Çıkış Yap
       </button>
-
       <div class="divider"></div>
-
-      <!-- HISTORY -->
       <div>
         <div class="section-label">Bugünkü Ziyaretler</div>
-        <div class="history-list" id="history-list">
-          <div style="font-size:13px;color:#3a4e5d;padding:8px 0;">Henüz ziyaret yok</div>
-        </div>
+        <div class="history-list" id="history-list"><div style="font-size:13px;color:#3a4e5d;padding:8px 0;">Henüz ziyaret yok</div></div>
       </div>
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
-const SUPABASE_URL = 'https://pbrcpxgstnmboysjmswh.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicmNweGdzdG5tYm95c2ptc3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjM5NDksImV4cCI6MjA4ODg5OTk0OX0.1M4Dby-r0gguIr6sZJisLvguJsPkcbBRUre7QYKN_qs';
-const headers = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+const SUPABASE_URL='https://pbrcpxgstnmboysjmswh.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicmNweGdzdG5tYm95c2ptc3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjM5NDksImV4cCI6MjA4ODg5OTk0OX0.1M4Dby-r0gguIr6sZJisLvguJsPkcbBRUre7QYKN_qs';
+const H={'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
 
-async function sb(method, table, body, query) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query || ''}`, {
-    method, headers: { ...headers, 'Prefer': method === 'POST' ? 'return=representation' : '' },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  return res.json().catch(() => null);
+async function sb(method,table,body,query){
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+(query||''),{method,headers:{...H,'Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):undefined});
+  return r.json().catch(()=>null);
 }
 
-let currentUser = null, currentVisit = null, timerInterval = null, checkInTime = null;
-let allReasons = [], selectedReasonIds = [], reasonMap = {};
+let currentUser=null,currentVisit=null,timerInterval=null,checkInTime=null;
+let allReasons=[],selectedReasonIds=[],reasonMap={};
+let pendingPhotoFile=null,photoList=[];
 
-async function loadPersonnel() {
-  const data = await sb('GET', 'personnel', null, '?is_active=eq.true&order=name');
-  const sel = document.getElementById('personnel-select');
-  sel.innerHTML = '<option value="">Personel seçin...</option>';
-  (data || []).forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; o.dataset.name = p.name; sel.appendChild(o); });
-  sel.onchange = () => { document.getElementById('login-btn').disabled = !sel.value; };
+async function loadPersonnel(){
+  const data=await sb('GET','personnel',null,'?is_active=eq.true&order=name');
+  const sel=document.getElementById('personnel-select');
+  sel.innerHTML='<option value="">Personel seçin...</option>';
+  (data||[]).forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;o.dataset.name=p.name;sel.appendChild(o);});
+  sel.onchange=()=>{document.getElementById('login-btn').disabled=!sel.value;};
 }
 
-function doLogin() {
-  const sel = document.getElementById('personnel-select');
-  const opt = sel.options[sel.selectedIndex];
-  currentUser = { id: sel.value, name: opt.dataset.name };
-  const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('user-avatar').textContent = initials;
-  document.getElementById('user-name').textContent = currentUser.name;
+function doLogin(){
+  const sel=document.getElementById('personnel-select');
+  const opt=sel.options[sel.selectedIndex];
+  currentUser={id:sel.value,name:opt.dataset.name};
+  const initials=currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('user-avatar').textContent=initials;
+  document.getElementById('user-name').textContent=currentUser.name;
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('main-screen').classList.remove('hidden');
-  loadCustomers(); loadReasons(); loadTodayHistory(); checkActiveVisit();
+  loadCustomers();loadReasons();loadTodayHistory();checkActiveVisit();
 }
 
-function doLogout() {
-  if (currentVisit) { showToast('Önce çıkış yapın', true); return; }
-  currentUser = null;
+function doLogout(){
+  if(currentVisit){showToast('Önce çıkış yapın',true);return;}
+  currentUser=null;
   document.getElementById('main-screen').classList.add('hidden');
   document.getElementById('login-screen').classList.remove('hidden');
 }
 
-async function loadCustomers() {
-  const data = await sb('GET', 'customers', null, '?is_active=eq.true&order=name');
-  const sel = document.getElementById('customer-select');
-  sel.innerHTML = '<option value="">Müşteri seçin...</option>';
-  (data || []).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; sel.appendChild(o); });
+async function loadCustomers(){
+  const data=await sb('GET','customers',null,'?is_active=eq.true&order=name');
+  const sel=document.getElementById('customer-select');
+  sel.innerHTML='<option value="">Müşteri seçin...</option>';
+  (data||[]).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
 }
 
-async function loadReasons() {
-  const data = await sb('GET', 'visit_reasons', null, '?is_active=eq.true&order=sort_order');
-  allReasons = data || [];
-  reasonMap = Object.fromEntries(allReasons.map(r => [r.id, r.label]));
+function onCustomerChange(){
+  const val=document.getElementById('customer-select').value;
+  document.getElementById('reasons-section').classList.toggle('hidden',!val);
+  updateCheckinBtn();
+}
+
+async function loadReasons(){
+  const data=await sb('GET','visit_reasons',null,'?is_active=eq.true&order=sort_order');
+  allReasons=data||[];
+  reasonMap=Object.fromEntries(allReasons.map(r=>[r.id,r.label]));
   renderReasonCheckboxes();
 }
 
-function renderReasonCheckboxes() {
-  const grid = document.getElementById('reasons-grid');
-  grid.innerHTML = allReasons.map(r => `
-    <div class="reason-item ${selectedReasonIds.includes(r.id) ? 'selected' : ''}" onclick="toggleReason('${r.id}', this)">
-      <div class="reason-check">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-      </div>
+function renderReasonCheckboxes(){
+  selectedReasonIds=[];
+  document.getElementById('reasons-grid').innerHTML=allReasons.map(r=>`
+    <div class="reason-item" id="reason-${r.id}" onclick="toggleReason('${r.id}',this)">
+      <div class="reason-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div>
       <div class="reason-text">${r.label}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function toggleReason(id, el) {
-  if (selectedReasonIds.includes(id)) {
-    selectedReasonIds = selectedReasonIds.filter(x => x !== id);
-    el.classList.remove('selected');
-  } else {
-    selectedReasonIds.push(id);
-    el.classList.add('selected');
-  }
+function toggleReason(id,el){
+  if(selectedReasonIds.includes(id)){selectedReasonIds=selectedReasonIds.filter(x=>x!==id);el.classList.remove('selected');}
+  else{selectedReasonIds.push(id);el.classList.add('selected');}
   updateCheckinBtn();
 }
 
-function onCustomerChange() {
-  const val = document.getElementById('customer-select').value;
-  if (val) {
-    document.getElementById('reasons-section').classList.remove('hidden');
-  } else {
-    document.getElementById('reasons-section').classList.add('hidden');
-  }
-  updateCheckinBtn();
+function updateCheckinBtn(){
+  const c=document.getElementById('customer-select').value;
+  document.getElementById('checkin-btn').disabled=!c||selectedReasonIds.length===0;
 }
 
-function updateCheckinBtn() {
-  const customer = document.getElementById('customer-select').value;
-  document.getElementById('checkin-btn').disabled = !customer || selectedReasonIds.length === 0;
-}
-
-async function doCheckIn() {
-  const customerId = document.getElementById('customer-select').value;
-  const customerName = document.getElementById('customer-select').options[document.getElementById('customer-select').selectedIndex].textContent;
-  if (!customerId) return;
-  document.getElementById('checkin-btn').disabled = true;
-  checkInTime = new Date();
-  const data = await sb('POST', 'visits', {
-    personnel_id: currentUser.id, customer_id: customerId,
-    check_in_time: checkInTime.toISOString(),
-    reason_ids: selectedReasonIds.length ? selectedReasonIds : null
-  });
-  if (data && data[0]) {
-    currentVisit = { ...data[0], customerName };
+async function doCheckIn(){
+  const sel=document.getElementById('customer-select');
+  const customerId=sel.value;
+  const customerName=sel.options[sel.selectedIndex].textContent;
+  if(!customerId||selectedReasonIds.length===0)return;
+  document.getElementById('checkin-btn').disabled=true;
+  checkInTime=new Date();
+  const data=await sb('POST','visits',{personnel_id:currentUser.id,customer_id:customerId,check_in_time:checkInTime.toISOString(),reason_ids:selectedReasonIds});
+  if(data&&data[0]){
+    currentVisit={...data[0],customerName};
+    photoList=[];
     setActiveUI(customerName);
     showToast('Giriş kaydedildi');
-  } else { showToast('Giriş kaydedilemedi', true); document.getElementById('checkin-btn').disabled = false; }
+  }else{showToast('Giriş kaydedilemedi',true);document.getElementById('checkin-btn').disabled=false;}
 }
 
-async function doCheckOut() {
-  if (!currentVisit) return;
-  document.getElementById("checkout-btn").disabled = true;
-  const checkOutTime = new Date();
-  const duration = Math.round((checkOutTime - checkInTime) / 60000);
-  const note = document.getElementById("visit-note").value.trim();
-  showToast("Yükleniyor...");
-  const photoUrl = await uploadPhoto(currentVisit.id);
-  await sb("PATCH", "visits", { check_out_time: checkOutTime.toISOString(), duration_minutes: duration, notes: note || null, photo_url: photoUrl }, "?id=eq." + currentVisit.id);
+async function doCheckOut(){
+  if(!currentVisit)return;
+  document.getElementById('checkout-btn').disabled=true;
+  showToast('Kaydediliyor...');
+  const checkOutTime=new Date();
+  const duration=Math.round((checkOutTime-checkInTime)/60000);
+  const uploadedPhotos=[];
+  for(let i=0;i<photoList.length;i++){
+    const p=photoList[i];if(!p)continue;
+    const url=await uploadPhotoFile(p.file,currentVisit.id,i);
+    if(url)uploadedPhotos.push({url,note:p.note||''});
+  }
+  await sb('PATCH','visits',{
+    check_out_time:checkOutTime.toISOString(),
+    duration_minutes:duration,
+    attendees:document.getElementById('note-attendees').value.trim()||null,
+    topics:document.getElementById('note-topics').value.trim()||null,
+    actions:document.getElementById('note-actions').value.trim()||null,
+    photos:uploadedPhotos.length?uploadedPhotos:null
+  },'?id=eq.'+currentVisit.id);
   clearInterval(timerInterval);
-  currentVisit = null; checkInTime = null; selectedReasonIds = []; selectedPhoto = null;
-  removePhoto();
-  setIdleUI(); loadTodayHistory();
-  showToast("Çıkış kaydedildi — " + duration + " dk");
+  currentVisit=null;checkInTime=null;selectedReasonIds=[];photoList=[];
+  setIdleUI();loadTodayHistory();
+  showToast('Çıkış kaydedildi — '+duration+' dk');
 }
 
-async function checkActiveVisit() {
-  const today = new Date().toISOString().split('T')[0];
-  const data = await sb('GET', 'visits', null, `?personnel_id=eq.${currentUser.id}&check_out_time=is.null&check_in_time=gte.${today}T00:00:00&order=check_in_time.desc&limit=1`);
-  if (data && data.length > 0) {
-    const v = data[0];
-    const custData = await sb('GET', 'customers', null, `?id=eq.${v.customer_id}`);
-    const customerName = custData?.[0]?.name || 'Bilinmiyor';
-    currentVisit = { ...v, customerName };
-    checkInTime = new Date(v.check_in_time);
-    selectedReasonIds = v.reason_ids || [];
-    setActiveUI(customerName);
+function onPhotoSelected(){
+  const file=document.getElementById('photo-input').files[0];
+  if(!file)return;
+  pendingPhotoFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('photo-preview-img').src=e.target.result;photoStep('preview');};
+  reader.readAsDataURL(file);
+}
+
+function photoStep(step){
+  ['add','preview','note','more'].forEach(s=>{
+    document.getElementById('photo-step-'+s).classList.toggle('hidden',s!==step);
+  });
+}
+
+function showPhotoNote(){photoStep('note');document.getElementById('photo-note-input').value='';}
+
+function skipPhotoNote(){commitPhoto('');photoStep('more');}
+
+function savePhotoWithNote(){commitPhoto(document.getElementById('photo-note-input').value.trim());photoStep('more');}
+
+function commitPhoto(note){
+  const idx=photoList.length;
+  photoList.push({file:pendingPhotoFile,note});
+  pendingPhotoFile=null;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const div=document.createElement('div');
+    div.className='photo-card';div.id='photo-card-'+idx;
+    div.innerHTML='<img src="'+e.target.result+'" style="width:100%;max-height:160px;object-fit:cover;display:block;" /><div class="photo-card-body">'+(note?'<div class="photo-card-note">"'+note+'"</div>':'')+'<button class="photo-remove" onclick="removePhoto('+idx+')">✕ Kaldır</button></div>';
+    document.getElementById('photo-list').appendChild(div);
+  };
+  reader.readAsDataURL(photoList[idx].file);
+}
+
+function removePhoto(idx){photoList[idx]=null;const el=document.getElementById('photo-card-'+idx);if(el)el.remove();}
+function addAnotherPhoto(){document.getElementById('photo-input').value='';photoStep('add');}
+function doneWithPhotos(){photoStep('add');}
+
+async function uploadPhotoFile(file,visitId,idx){
+  const ext=file.name.split('.').pop();
+  const path=visitId+'_'+idx+'_'+Date.now()+'.'+ext;
+  const res=await fetch(SUPABASE_URL+'/storage/v1/object/visit-photos/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':file.type},body:file});
+  if(!res.ok)return null;
+  return SUPABASE_URL+'/storage/v1/object/public/visit-photos/'+path;
+}
+
+async function checkActiveVisit(){
+  const today=new Date().toISOString().split('T')[0];
+  const data=await sb('GET','visits',null,'?personnel_id=eq.'+currentUser.id+'&check_out_time=is.null&check_in_time=gte.'+today+'T00:00:00&order=check_in_time.desc&limit=1');
+  if(data&&data.length>0){
+    const v=data[0];
+    const custData=await sb('GET','customers',null,'?id=eq.'+v.customer_id);
+    currentVisit={...v,customerName:custData?.[0]?.name||'?'};
+    checkInTime=new Date(v.check_in_time);
+    selectedReasonIds=v.reason_ids||[];
+    photoList=[];
+    setActiveUI(currentVisit.customerName);
   }
 }
 
-async function loadTodayHistory() {
-  const today = new Date().toISOString().split('T')[0];
-  const data = await sb('GET', 'visits', null, `?personnel_id=eq.${currentUser.id}&check_in_time=gte.${today}T00:00:00&check_out_time=not.is.null&order=check_in_time.desc`);
-  const list = document.getElementById('history-list');
-  if (!data || !data.length) { list.innerHTML = '<div style="font-size:13px;color:#3a4e5d;padding:8px 0;">Henüz tamamlanan ziyaret yok</div>'; return; }
-  const custIds = [...new Set(data.map(v => v.customer_id))];
-  const custs = await sb('GET', 'customers', null, `?id=in.(${custIds.join(',')})`);
-  const custMap = Object.fromEntries((custs||[]).map(c => [c.id, c.name]));
-  list.innerHTML = data.map(v => {
-    const t = new Date(v.check_in_time).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-    const reasons = (v.reason_ids || []).map(id => reasonMap[id]).filter(Boolean);
-    return `<div class="history-item">
-      <div class="history-item-top">
-        <div class="history-customer">${custMap[v.customer_id] || '?'}</div>
-        <div class="history-duration">${v.duration_minutes} dk</div>
-      </div>
-      <div class="history-meta">Giriş: ${t}</div>
-      ${reasons.length ? `<div class="history-reasons">${reasons.map(r => `<span class="history-reason-tag">${r}</span>`).join('')}</div>` : ''}
-      ${v.notes ? `<div class="history-note">${v.notes}</div>` : ''}
-    </div>`;
+async function loadTodayHistory(){
+  const today=new Date().toISOString().split('T')[0];
+  const data=await sb('GET','visits',null,'?personnel_id=eq.'+currentUser.id+'&check_in_time=gte.'+today+'T00:00:00&check_out_time=not.is.null&order=check_in_time.desc');
+  const list=document.getElementById('history-list');
+  if(!data||!data.length){list.innerHTML='<div style="font-size:13px;color:#3a4e5d;padding:8px 0;">Henüz tamamlanan ziyaret yok</div>';return;}
+  const custIds=[...new Set(data.map(v=>v.customer_id))];
+  const custs=await sb('GET','customers',null,'?id=in.('+custIds.join(',')+')');;
+  const custMap=Object.fromEntries((custs||[]).map(c=>[c.id,c.name]));
+  list.innerHTML=data.map(v=>{
+    const t=new Date(v.check_in_time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    const reasons=(v.reason_ids||[]).map(id=>reasonMap[id]).filter(Boolean);
+    const photoCount=(v.photos||[]).length;
+    return '<div class="history-item"><div class="history-item-top"><div class="history-customer">'+(custMap[v.customer_id]||'?')+'</div><div class="history-duration">'+v.duration_minutes+' dk</div></div>'
+      +'<div class="history-meta">Giriş: '+t+(photoCount?' · 📷 '+photoCount+' fotoğraf':'')+'</div>'
+      +(reasons.length?'<div class="history-reasons">'+reasons.map(r=>'<span class="history-reason-tag">'+r+'</span>').join('')+'</div>':'')
+      +(v.attendees?'<div class="history-note">👤 '+v.attendees+'</div>':'')
+      +'</div>';
   }).join('');
 }
 
-function setActiveUI(customerName) {
-  document.getElementById('status-card').className = 'status-card active';
-  document.getElementById('status-label').textContent = 'Ziyarette';
-  document.getElementById('status-customer').textContent = customerName;
-  document.getElementById('status-time').textContent = 'Giriş: ' + checkInTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+function setActiveUI(customerName){
+  document.getElementById('status-card').className='status-card active';
+  document.getElementById('status-label').textContent='Ziyarette';
+  document.getElementById('status-customer').textContent=customerName;
+  document.getElementById('status-time').textContent='Giriş: '+checkInTime.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('timer-display').classList.remove('hidden');
-  const activeReasons = document.getElementById('active-reasons');
-  if (selectedReasonIds.length) {
-    activeReasons.classList.remove('hidden');
-    activeReasons.innerHTML = selectedReasonIds.map(id => reasonMap[id] ? `<span class="reason-badge">${reasonMap[id]}</span>` : '').join('');
-  }
+  const ar=document.getElementById('active-reasons');
+  if(selectedReasonIds.length){ar.classList.remove('hidden');ar.innerHTML=selectedReasonIds.map(id=>reasonMap[id]?'<span class="reason-badge">'+reasonMap[id]+'</span>':'').join('');}
   document.getElementById('idle-state').classList.add('hidden');
   document.getElementById('reasons-section').classList.add('hidden');
   document.getElementById('active-state').classList.remove('hidden');
   document.getElementById('checkin-btn').classList.add('hidden');
   document.getElementById('checkout-btn').classList.remove('hidden');
-  document.getElementById('checkout-btn').disabled = false;
+  document.getElementById('checkout-btn').disabled=false;
+  document.getElementById('note-attendees').value='';
+  document.getElementById('note-topics').value='';
+  document.getElementById('note-actions').value='';
+  document.getElementById('photo-list').innerHTML='';
+  photoStep('add');
   startTimer();
 }
 
-function setIdleUI() {
-  document.getElementById('status-card').className = 'status-card idle';
-  document.getElementById('status-label').textContent = 'Bekleniyor';
-  document.getElementById('status-customer').textContent = 'Müşteri seçilmedi';
-  document.getElementById('status-time').textContent = 'Giriş yapmak için aşağıdan müşteri seçin';
+function setIdleUI(){
+  document.getElementById('status-card').className='status-card idle';
+  document.getElementById('status-label').textContent='Bekleniyor';
+  document.getElementById('status-customer').textContent='Müşteri seçilmedi';
+  document.getElementById('status-time').textContent='Giriş yapmak için aşağıdan müşteri seçin';
   document.getElementById('timer-display').classList.add('hidden');
   document.getElementById('active-reasons').classList.add('hidden');
   document.getElementById('idle-state').classList.remove('hidden');
@@ -405,63 +420,27 @@ function setIdleUI() {
   document.getElementById('active-state').classList.add('hidden');
   document.getElementById('checkin-btn').classList.remove('hidden');
   document.getElementById('checkout-btn').classList.add('hidden');
-  document.getElementById('customer-select').value = '';
-  document.getElementById('visit-note').value = '';
-  document.getElementById('checkin-btn').disabled = true;
+  document.getElementById('customer-select').value='';
+  document.getElementById('checkin-btn').disabled=true;
   renderReasonCheckboxes();
 }
 
-function startTimer() {
+function startTimer(){
   clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    const diff = Math.floor((new Date() - checkInTime) / 1000);
-    const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
-    document.getElementById('timer').textContent = h > 0
-      ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
-      : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  }, 1000);
+  timerInterval=setInterval(()=>{
+    const diff=Math.floor((new Date()-checkInTime)/1000);
+    const h=Math.floor(diff/3600),m=Math.floor((diff%3600)/60),s=diff%60;
+    document.getElementById('timer').textContent=h>0
+      ?(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'))
+      :(String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'));
+  },1000);
 }
 
 let toastTimeout;
-function showToast(msg, error) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast' + (error ? ' error' : '') + ' show';
-  clearTimeout(toastTimeout); toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-let selectedPhoto = null;
-
-function onPhotoSelected() {
-  const file = document.getElementById("photo-input").files[0];
-  if (!file) return;
-  selectedPhoto = file;
-  document.getElementById("photo-label-text").textContent = file.name;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById("photo-img").src = e.target.result;
-    document.getElementById("photo-preview").style.display = "block";
-  };
-  reader.readAsDataURL(file);
-}
-
-function removePhoto() {
-  selectedPhoto = null;
-  document.getElementById("photo-input").value = "";
-  document.getElementById("photo-label-text").textContent = "Fotoğraf seç veya çek";
-  document.getElementById("photo-preview").style.display = "none";
-}
-
-async function uploadPhoto(visitId) {
-  if (!selectedPhoto) return null;
-  const ext = selectedPhoto.name.split(".").pop();
-  const path = visitId + "." + ext;
-  const res = await fetch(SUPABASE_URL + "/storage/v1/object/visit-photos/" + path, {
-    method: "POST",
-    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": selectedPhoto.type },
-    body: selectedPhoto
-  });
-  if (!res.ok) return null;
-  return SUPABASE_URL + "/storage/v1/object/public/visit-photos/" + path;
+function showToast(msg,error){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(error?' error':'')+' show';
+  clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('show'),2500);
 }
 
 loadPersonnel();
