@@ -21,6 +21,8 @@ html, body { height: 100%; background: #0f1923; color: #e8edf2; font-family: 'Pl
 .login-form { display: flex; flex-direction: column; gap: 12px; }
 .login-form label { font-size: 12px; font-weight: 600; color: #5a7080; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
 .field-select { width: 100%; background: #162130; border: 1px solid #1e2e3d; border-radius: 14px; padding: 14px 16px; color: #e8edf2; font-size: 15px; font-family: inherit; appearance: none; }
+input.field-select { letter-spacing: 4px; font-size: 18px; }
+input.field-select::placeholder { letter-spacing: normal; font-size: 15px; }
 .btn-primary { background: #1a9e75; border: none; border-radius: 14px; padding: 16px; color: #e1f5ee; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
 .btn-primary:disabled { background: #1e2e3d; color: #3a4e5d; cursor: not-allowed; }
 #main-screen { flex: 1; display: flex; flex-direction: column; }
@@ -95,6 +97,8 @@ html, body { height: 100%; background: #0f1923; color: #e8edf2; font-family: 'Pl
     </div>
     <div class="login-form">
       <div><label>Personel Seçin</label><select class="field-select" id="personnel-select"><option value="">Yükleniyor...</option></select></div>
+      <div id="pin-row" class="hidden"><label>PIN</label><input type="password" inputmode="numeric" maxlength="10" class="field-select" id="pin-input" placeholder="••••" oninput="updateLoginBtn()" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <div id="pin-error" class="hidden" style="color:#e74c3c;font-size:13px;text-align:center;">Hatalı PIN</div>
       <button class="btn-primary" id="login-btn" disabled onclick="doLogin()">Giriş Yap</button>
     </div>
   </div>
@@ -196,18 +200,47 @@ let currentUser=null,currentVisit=null,timerInterval=null,checkInTime=null;
 let allReasons=[],selectedReasonIds=[],reasonMap={};
 let pendingPhotoFile=null,photoList=[];
 
+let personnelData=[];
+
 async function loadPersonnel(){
-  const data=await sb('GET','personnel',null,'?is_active=eq.true&order=name');
+  const data=await sb('GET','personnel',null,'?is_active=eq.true&order=name&select=id,name,pin');
+  personnelData=data||[];
   const sel=document.getElementById('personnel-select');
   sel.innerHTML='<option value="">Personel seçin...</option>';
-  (data||[]).forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;o.dataset.name=p.name;sel.appendChild(o);});
-  sel.onchange=()=>{document.getElementById('login-btn').disabled=!sel.value;};
+  personnelData.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
+  sel.onchange=()=>{
+    const hasPerson=!!sel.value;
+    const selected=personnelData.find(p=>p.id===sel.value);
+    const needPin=selected&&selected.pin;
+    document.getElementById('pin-row').classList.toggle('hidden',!hasPerson||!needPin);
+    document.getElementById('pin-error').classList.add('hidden');
+    document.getElementById('pin-input').value='';
+    updateLoginBtn();
+  };
+}
+
+function updateLoginBtn(){
+  const sel=document.getElementById('personnel-select');
+  const selected=personnelData.find(p=>p.id===sel.value);
+  const needPin=selected&&selected.pin;
+  const pinOk=!needPin||document.getElementById('pin-input').value.length>0;
+  document.getElementById('login-btn').disabled=!sel.value||!pinOk;
 }
 
 function doLogin(){
   const sel=document.getElementById('personnel-select');
-  const opt=sel.options[sel.selectedIndex];
-  currentUser={id:sel.value,name:opt.dataset.name};
+  const selected=personnelData.find(p=>p.id===sel.value);
+  if(!selected)return;
+  if(selected.pin){
+    const entered=document.getElementById('pin-input').value;
+    if(entered!==selected.pin){
+      document.getElementById('pin-error').classList.remove('hidden');
+      document.getElementById('pin-input').value='';
+      return;
+    }
+  }
+  document.getElementById('pin-error').classList.add('hidden');
+  currentUser={id:selected.id,name:selected.name};
   const initials=currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-avatar').textContent=initials;
   document.getElementById('user-name').textContent=currentUser.name;
@@ -283,26 +316,43 @@ async function doCheckOut(){
   if(!currentVisit)return;
   document.getElementById('checkout-btn').disabled=true;
   showToast('Kaydediliyor...');
-  const checkOutTime=new Date();
-  const duration=Math.round((checkOutTime-checkInTime)/60000);
-  const uploadedPhotos=[];
-  for(let i=0;i<photoList.length;i++){
-    const p=photoList[i];if(!p)continue;
-    const url=await uploadPhotoFile(p.file,currentVisit.id,i);
-    if(url)uploadedPhotos.push({url,note:p.note||''});
+  try{
+    const checkOutTime = new Date();
+    const duration = Math.max(0, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
+    const uploadedPhotos=[];
+    for(let i=0;i<photoList.length;i++){
+      const p=photoList[i];if(!p)continue;
+      const url=await uploadPhotoFile(p.file,currentVisit.id,i);
+      if(url)uploadedPhotos.push({url,note:p.note||''});
+    }
+    const res=await fetch(SUPABASE_URL+'/rest/v1/visits?id=eq.'+currentVisit.id,{
+      method:'PATCH',
+      headers:{...H,'Prefer':'return=representation'},
+      body:JSON.stringify({
+        check_out_time:checkOutTime.toISOString(),
+        duration_minutes:duration,
+        attendees:document.getElementById('note-attendees').value.trim()||null,
+        topics:document.getElementById('note-topics').value.trim()||null,
+        actions:document.getElementById('note-actions').value.trim()||null,
+        photos:uploadedPhotos.length?uploadedPhotos:null
+      })
+    });
+    if(!res.ok){
+      const err=await res.text();
+      console.error('PATCH error:',err);
+      showToast('Hata: '+(JSON.parse(err).message||err).slice(0,60),true);
+      document.getElementById('checkout-btn').disabled=false;
+      return;
+    }
+    clearInterval(timerInterval);
+    currentVisit=null;checkInTime=null;selectedReasonIds=[];photoList=[];
+    setIdleUI();loadTodayHistory();
+    showToast('Çıkış kaydedildi — '+duration+' dk');
+  }catch(e){
+    console.error('checkout exception:',e);
+    showToast('Bağlantı hatası',true);
+    document.getElementById('checkout-btn').disabled=false;
   }
-  await sb('PATCH','visits',{
-    check_out_time:checkOutTime.toISOString(),
-    duration_minutes:duration,
-    attendees:document.getElementById('note-attendees').value.trim()||null,
-    topics:document.getElementById('note-topics').value.trim()||null,
-    actions:document.getElementById('note-actions').value.trim()||null,
-    photos:uploadedPhotos.length?uploadedPhotos:null
-  },'?id=eq.'+currentVisit.id);
-  clearInterval(timerInterval);
-  currentVisit=null;checkInTime=null;selectedReasonIds=[];photoList=[];
-  setIdleUI();loadTodayHistory();
-  showToast('Çıkış kaydedildi — '+duration+' dk');
 }
 
 function onPhotoSelected(){
@@ -359,7 +409,8 @@ async function checkActiveVisit(){
     const v=data[0];
     const custData=await sb('GET','customers',null,'?id=eq.'+v.customer_id);
     currentVisit={...v,customerName:custData?.[0]?.name||'?'};
-    checkInTime=new Date(v.check_in_time);
+    const ci=v.check_in_time.replace(' ','T')+(v.check_in_time.includes('+')||v.check_in_time.endsWith('Z')?'':'+00:00');
+    checkInTime=new Date(ci);
     selectedReasonIds=v.reason_ids||[];
     photoList=[];
     setActiveUI(currentVisit.customerName);
@@ -375,7 +426,7 @@ async function loadTodayHistory(){
   const custs=await sb('GET','customers',null,'?id=in.('+custIds.join(',')+')');;
   const custMap=Object.fromEntries((custs||[]).map(c=>[c.id,c.name]));
   list.innerHTML=data.map(v=>{
-    const t=new Date(v.check_in_time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    const t=new Date(v.check_in_time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'});
     const reasons=(v.reason_ids||[]).map(id=>reasonMap[id]).filter(Boolean);
     const photoCount=(v.photos||[]).length;
     return '<div class="history-item"><div class="history-item-top"><div class="history-customer">'+(custMap[v.customer_id]||'?')+'</div><div class="history-duration">'+v.duration_minutes+' dk</div></div>'
